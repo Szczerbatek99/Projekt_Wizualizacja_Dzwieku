@@ -1,0 +1,10 @@
+build/
+cmake-build-*/
+*.user
+.vscode/
+.idea/
+docs/html/
+docs/latex/
+docs/xml/
+*.pro.user
+compile_commands.json
