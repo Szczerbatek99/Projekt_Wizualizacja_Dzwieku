@@ -18,83 +18,11 @@ FFTWidget::FFTWidget(QWidget *parent)
     m_refreshTimer->start(33);
 }
 
-void FFTWidget::applyHannWindow(std::vector<double>& data)
+void FFTWidget::updateSpectrum(const std::vector<double>& magnitudesDb)
 {
-    const int N = static_cast<int>(data.size());
-    for (int i = 0; i < N; ++i) {
-        double window = 0.5 * (1.0 - std::cos(2.0 * M_PI * i / (N - 1)));
-        data[i] *= window;
-    }
-}
-
-void FFTWidget::fft(std::vector<std::complex<double>>& data)
-{
-    const int N = static_cast<int>(data.size());
-    if (N <= 1) return;
-
-    // Bit-reversal permutation
-    for (int i = 1, j = 0; i < N; ++i) {
-        int bit = N >> 1;
-        while (j & bit) {
-            j ^= bit;
-            bit >>= 1;
-        }
-        j ^= bit;
-        if (i < j) std::swap(data[i], data[j]);
-    }
-
-    // Cooley-Tukey iterative FFT
-    for (int len = 2; len <= N; len <<= 1) {
-        double angle = -2.0 * M_PI / len;
-        std::complex<double> wBase(std::cos(angle), std::sin(angle));
-
-        for (int i = 0; i < N; i += len) {
-            std::complex<double> w(1.0, 0.0);
-            for (int j = 0; j < len / 2; ++j) {
-                std::complex<double> u = data[i + j];
-                std::complex<double> v = data[i + j + len / 2] * w;
-                data[i + j] = u + v;
-                data[i + j + len / 2] = u - v;
-                w *= wBase;
-            }
-        }
-    }
-}
-
-void FFTWidget::processSamples(const std::vector<int32_t>& data)
-{
-    if (static_cast<int>(data.size()) < FFT_SIZE) return;
-
-    // Konwersja int32 -> double (normalizacja do zakresu [-1, 1])
-    // Dane 24-bitowe wyrównane do lewej w 32-bitowej zmiennej (LSB = 0)
-    // Dzielimy przez 2^31 aby uzyskać zakres [-1, 1]
-    std::vector<double> realData(FFT_SIZE);
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        realData[i] = static_cast<double>(data[i]) / 2147483648.0;
-    }
-
-    // Okno Hanninga — redukcja "wyciekania" widmowego (spectral leakage)
-    applyHannWindow(realData);
-
-    // Przygotowanie danych zespolonych (część urojona = 0)
-    std::vector<std::complex<double>> complexData(FFT_SIZE);
-    for (int i = 0; i < FFT_SIZE; ++i) {
-        complexData[i] = std::complex<double>(realData[i], 0.0);
-    }
-
-    // Obliczenie FFT
-    fft(complexData);
-
-    // Obliczenie widma amplitudowego w dB (tylko połowa — symetria FFT)
-    const int halfN = FFT_SIZE / 2;
-    for (int i = 0; i < halfN; ++i) {
-        double magnitude = std::abs(complexData[i]) / halfN;
-        // Konwersja na dB (z zabezpieczeniem przed log(0))
-        double db = 20.0 * std::log10(std::max(magnitude, 1e-10));
-        // Wygładzanie (exponential moving average) — żeby słupki nie skakały zbyt gwałtownie
-        m_magnitudeDb[i] = m_magnitudeDb[i] * 0.7 + db * 0.3;
-    }
-
+    // Kopiujemy gotowe decybele do naszego bufora na wypadek gdyby
+    // repaint() wywołał się po powrocie ze slota
+    m_magnitudeDb = magnitudesDb;
     m_hasData = true;
 }
 
@@ -148,7 +76,8 @@ void FFTWidget::paintEvent(QPaintEvent * /*event*/)
     if (!m_hasData) return;
 
     // === Rysowanie widma ===
-    const int halfN = FFT_SIZE / 2;
+    const int halfN = m_magnitudeDb.size();
+    if (halfN == 0) return;
 
     // Gradient koloru słupków
     QLinearGradient barGrad(0, h, 0, 0);

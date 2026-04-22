@@ -9,7 +9,18 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+find_path(FFTW_INCLUDE_DIR NAMES fftw3.h)
+find_library(FFTW_LIBRARY NAMES fftw3)
+
+if(FFTW_INCLUDE_DIR AND FFTW_LIBRARY)
+    message(STATUS "Znaleziono FFTW: ${FFTW_LIBRARY}")
+else()
+    message(FATAL_ERROR "Nie znaleziono biblioteki FFTW! Sprawdź ścieżki.")
+endif()
+
+
 find_package(Qt6 COMPONENTS Core Widgets SerialPort REQUIRED)
+
 
 include_directories(inc)
 
@@ -18,12 +29,15 @@ set(SOURCES
     src/McuAudioReceiver.cpp
     src/OscillogramWidget.cpp
     src/FFTWidget.cpp
+    src/DataProcessor.cpp
 )
 
 set(HEADERS
     inc/McuAudioReceiver.hh
     inc/OscillogramWidget.hh
     inc/FFTWidget.hh
+    inc/DataProcessor.hh
+    inc/config.hh
 )
 
 add_executable(SoundVisualizer
@@ -32,3 +46,5 @@ add_executable(SoundVisualizer
 )
 
 target_link_libraries(SoundVisualizer PRIVATE Qt6::Core Qt6::Widgets Qt6::SerialPort)
+target_include_directories(SoundVisualizer PRIVATE ${FFTW_INCLUDE_DIR})
+target_link_libraries(SoundVisualizer PRIVATE ${FFTW_LIBRARY})

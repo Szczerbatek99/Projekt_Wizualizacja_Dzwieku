@@ -57,16 +57,26 @@ signals:
     void errorOccurred(const QString& errorMessage);
 
 private slots:
+    /**
+     * @brief Odczytuje dostępne bajty z portu i składa pełne paczki próbek.
+     *
+     * Metoda buforuje przychodzące bajty w wewnętrznym `QByteArray m_buffer`.
+     * Gdy w buforze znajduje się przynajmniej `samplesPacketSize * sizeof(int32_t)` bajtów,
+     * wycina jedną paczkę, konwertuje ją na `std::vector<int32_t>` i emituje `dataReceived`.
+     */
     void handleReadyRead();
+
+    /**
+     * @brief Obsługa błędów portu szeregowego.
+     *
+     * Emituje `errorOccurred` dla błędów krytycznych i zatrzymuje odbiór w razie potrzeby.
+     * @param serialPortError Typ błędu zgłaszany przez QSerialPort.
+     */
     void handleError(QSerialPort::SerialPortError serialPortError);
 
 private:
-    // WAŻNE: Przywróciłem 'm_isActive'. Gdy miałeś samo 'isActive' i metodę 'isActive()' C++ wywali błąd kompilacji
     bool m_isActive = false;
     
     QSerialPort *m_serialPort;
     QByteArray m_buffer;
-    
-    // Rozmiar paczki w liczbie próbek (zmienna 2^N, tutaj początkowo 1024)
-    size_t m_currentPacketSamples = 1024; 
 };
