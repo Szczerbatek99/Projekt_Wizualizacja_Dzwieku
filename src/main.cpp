@@ -29,8 +29,8 @@ int main(int argc, char *argv[])
     // Przetwarzanie danych (FFT, normalizacja itp.)
     DataProcessor processor;
 
-    // Podłączenie: nowa paczka próbek -> oscylogram
-    QObject::connect(&receiver, &McuAudioReceiver::dataReceived,
+    // Podłączenie: nowa paczka próbek -> oscylogram (dochodzi już znormalizowana przez DataProcessor)
+    QObject::connect(&processor, &DataProcessor::waveformDataReady,
                      &oscillogram, &OscillogramWidget::appendSamples);
                      
     // Podłączenie: nowa paczka próbek -> DataProcessor (dla FFT)

@@ -7,7 +7,7 @@
 
 FFTWidget::FFTWidget(QWidget *parent)
     : QWidget(parent)
-    , m_magnitudeDb(FFT_SIZE / 2, -120.0)
+    , m_magnitudeDb(FFT_SIZE / 2, 0.0)
     , m_refreshTimer(new QTimer(this))
 {
     setMinimumSize(800, 400);
@@ -18,11 +18,11 @@ FFTWidget::FFTWidget(QWidget *parent)
     m_refreshTimer->start(33);
 }
 
-void FFTWidget::updateSpectrum(const std::vector<double>& magnitudesDb)
+void FFTWidget::updateSpectrum(const std::vector<double>& magnitudes)
 {
-    // Kopiujemy gotowe decybele do naszego bufora na wypadek gdyby
+    // Kopiujemy gotowe amplitudy (linarne, bez dB) do naszego bufora na wypadek gdyby
     // repaint() wywołał się po powrocie ze slota
-    m_magnitudeDb = magnitudesDb;
+    m_magnitudeDb = magnitudes; // nazwa członka pozostawiona, ale wartości są liniowe amplitudy
     m_hasData = true;
 }
 
@@ -43,22 +43,6 @@ void FFTWidget::paintEvent(QPaintEvent * /*event*/)
     // === Siatka ===
     painter.setPen(QPen(QColor(40, 40, 60), 1, Qt::DotLine));
 
-    // Linie poziome — co 20 dB
-    const double dbMin = -120.0;
-    const double dbMax = 0.0;
-    const double dbRange = dbMax - dbMin;
-
-    for (int db = -100; db <= 0; db += 20) {
-        double normalized = (db - dbMin) / dbRange;
-        int y = h - static_cast<int>(normalized * h);
-        painter.drawLine(0, y, w, y);
-
-        // Etykieta dB
-        painter.setPen(QColor(120, 120, 140));
-        painter.drawText(5, y - 3, QString::number(db) + " dB");
-        painter.setPen(QPen(QColor(40, 40, 60), 1, Qt::DotLine));
-    }
-
     // Linie pionowe — na częstotliwościach kluczowych
     const double nyquist = SAMPLE_RATE / 2.0;
     const int freqMarkers[] = {100, 500, 1000, 2000, 4000, 6000, 8000};
@@ -75,9 +59,31 @@ void FFTWidget::paintEvent(QPaintEvent * /*event*/)
 
     if (!m_hasData) return;
 
-    // === Rysowanie widma ===
+    // === Rysowanie widma (amplituda liniowa, NIE dB) ===
     const int halfN = m_magnitudeDb.size();
     if (halfN == 0) return;
+
+    // Wyznacz maksymalną amplitudę (pomijamy bin 0 - DC) do skalowania wykresu
+    double ampMax = 1.0;
+    if (halfN > 1) {
+        ampMax = *std::max_element(m_magnitudeDb.begin() + 1, m_magnitudeDb.end());
+        if (ampMax <= 0.0) ampMax = 1.0; // zapobiegamy dzieleniu przez zero
+    }
+    const double ampMin = 0.0;
+    const double ampRange = ampMax - ampMin;
+
+    // Linie poziome - wartości amplitudy (0..ampMax)
+    painter.setPen(QPen(QColor(40, 40, 60), 1, Qt::DotLine));
+    for (int i = 0; i <= 4; ++i) {
+        double frac = static_cast<double>(i) / 4.0;
+        int y = h - static_cast<int>(frac * h);
+        painter.drawLine(0, y, w, y);
+
+        painter.setPen(QColor(120, 120, 140));
+        double labelVal = ampMin + frac * ampRange;
+        painter.drawText(5, y - 3, QString::number(labelVal, 'f', 3));
+        painter.setPen(QPen(QColor(40, 40, 60), 1, Qt::DotLine));
+    }
 
     // Gradient koloru słupków
     QLinearGradient barGrad(0, h, 0, 0);
@@ -93,7 +99,7 @@ void FFTWidget::paintEvent(QPaintEvent * /*event*/)
     const double binWidth = static_cast<double>(w) / halfN;
 
     for (int i = 1; i < halfN; ++i) { // pomijamy bin 0 (DC offset)
-        double normalized = (m_magnitudeDb[i] - dbMin) / dbRange;
+        double normalized = (m_magnitudeDb[i] - ampMin) / ampRange;
         normalized = std::clamp(normalized, 0.0, 1.0);
 
         int barHeight = static_cast<int>(normalized * h);

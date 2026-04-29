@@ -18,35 +18,16 @@ OscillogramWidget::OscillogramWidget(QWidget *parent)
     m_refreshTimer->start(33);
 }
 
-void OscillogramWidget::appendSamples(const std::vector<int32_t>& data)
+void OscillogramWidget::appendSamples(const std::vector<double>& data)
 {
-    // Dorzuć nowe próbki na koniec bufora
-    for (int32_t sample : data) {
+    // Dorzuć nowe próbki na koniec bufora (dane już znormalizowane w [-1,1])
+    for (double sample : data) {
         m_buffer.push_back(sample);
     }
 
-    // Jeśli bufor przekroczył 2 sekundy, usuń najstarsze próbki z przodu
+    // Jeśli bufor przekroczył maksymalny rozmiar, usuń najstarsze próbki z przodu
     while (static_cast<int>(m_buffer.size()) > BUFFER_SIZE) {
         m_buffer.pop_front();
-    }
-
-    // Aktualizuj wartości szczytowe do autoskalowania osi Y
-    // (nie szukamy min/max w CAŁYM buforze co paczkę — tylko sprawdzamy nową paczkę
-    //  i powoli "wygaszamy" stare szczyty, aby wykres adaptował się do głośności)
-    for (int32_t sample : data) {
-        if (sample > m_peakMax) m_peakMax = sample;
-        if (sample < m_peakMin) m_peakMin = sample;
-    }
-
-    // Powolne wygaszanie szczytów (decay) — żeby oś Y nie "wariowała"
-    // przy nagłej ciszy po głośnym dźwięku
-    m_peakMax = static_cast<int32_t>(m_peakMax * 0.999);
-    m_peakMin = static_cast<int32_t>(m_peakMin * 0.999);
-
-    // Minimalna rozpiętość, żeby nie dzielić przez zero
-    if (m_peakMax - m_peakMin < 2) {
-        m_peakMax = 1;
-        m_peakMin = -1;
     }
 }
 
@@ -66,16 +47,19 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
 
     // === Siatka (grid) ===
     painter.setPen(QPen(QColor(40, 40, 60), 1, Qt::DotLine));
+    
+    constexpr int horizontal_lines = 5;
+    constexpr int vertical_lines = 20;
 
     // Linie poziome (5 linii)
-    for (int i = 1; i < 5; ++i) {
-        int y = h * i / 5;
+    for (int i = 1; i < horizontal_lines; ++i) {
+        int y = h * i / horizontal_lines;
         painter.drawLine(0, y, w, y);
     }
 
     // Linie pionowe — co 0.25 sekundy (8 linii na 2s)
-    for (int i = 1; i < 8; ++i) {
-        int x = w * i / 8;
+    for (int i = 1; i < vertical_lines; ++i) {
+        int x = w * i / vertical_lines;
         painter.drawLine(x, 0, x, h);
     }
 
@@ -88,11 +72,10 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
     const int bufSize = static_cast<int>(m_buffer.size());
     if (bufSize < 2) return; // za mało danych
 
-    // Rozpiętość Y
-    const double range = static_cast<double>(m_peakMax) - static_cast<double>(m_peakMin);
+    // Ustalona skala Y: dane znormalizowane w zakresie [-1, 1]
     const double margin = 0.05; // 5% marginesu górnego i dolnego
-    const double usableH = h * (1.0 - 2.0 * margin);
     const double topMargin = h * margin;
+    const double usableH = h * (1.0 - 2.0 * margin);
 
     // Gradient na linii przebiegu
     QLinearGradient lineGrad(0, 0, 0, h);
@@ -111,8 +94,9 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
         QPointF prev;
         for (int i = 0; i < bufSize; ++i) {
             double x = (static_cast<double>(i) / (bufSize - 1)) * w;
-            double normalized = (static_cast<double>(m_buffer[i]) - m_peakMin) / range;
-            double y = topMargin + usableH * (1.0 - normalized);
+            double n = static_cast<double>(m_buffer[i]); // wartość w [-1,1]
+            double v = (n + 1.0) * 0.5; // zamiana na [0,1]
+            double y = topMargin + (1.0 - v) * usableH;
 
             QPointF current(x, y);
             if (i > 0) {
@@ -128,17 +112,17 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
             int startSample = static_cast<int>(px * samplesPerPixel);
             int endSample = std::min(static_cast<int>((px + 1) * samplesPerPixel), bufSize);
 
-            int32_t localMin = m_buffer[startSample];
-            int32_t localMax = m_buffer[startSample];
+            double localMin = m_buffer[startSample];
+            double localMax = m_buffer[startSample];
             for (int s = startSample + 1; s < endSample; ++s) {
                 if (m_buffer[s] < localMin) localMin = m_buffer[s];
                 if (m_buffer[s] > localMax) localMax = m_buffer[s];
             }
 
-            double normMin = (static_cast<double>(localMin) - m_peakMin) / range;
-            double normMax = (static_cast<double>(localMax) - m_peakMin) / range;
-            double yTop = topMargin + usableH * (1.0 - normMax);
-            double yBot = topMargin + usableH * (1.0 - normMin);
+            double vMax = (localMax + 1.0) * 0.5;
+            double vMin = (localMin + 1.0) * 0.5;
+            double yTop = topMargin + (1.0 - vMax) * usableH;
+            double yBot = topMargin + (1.0 - vMin) * usableH;
 
             // Rysowanie pionowej kreski min-max
             painter.drawLine(QPointF(px, yTop), QPointF(px, yBot));

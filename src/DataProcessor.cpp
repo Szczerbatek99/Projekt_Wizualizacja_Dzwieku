@@ -3,6 +3,7 @@
 #include <cmath>
 #include <algorithm>
 #include <fftw3.h>
+#include <limits>
 
 DataProcessor::DataProcessor(QObject *parent):
     QObject(parent)
@@ -40,7 +41,9 @@ void DataProcessor::processRawData(const std::vector<int32_t>& data)
     if (static_cast<int>(data.size()) < samplesPacketSize) return;
     std::vector<double> normalizedData(samplesPacketSize);
 
-    constexpr double scale = 1.0 / 8388607.0;
+    // Normalize according to 32-bit signed samples sent by MCU (int32_t)
+    // Use 2^31 as denominator so -2^31 maps to -1.0 and +2^31-1 maps slightly below 1.0
+    constexpr double scale = 1.0 / 2147483648.0;
     for (size_t i = 0; i < samplesPacketSize; ++i) {
         double v = static_cast<double>(data[i]) * scale;
         if (v > 1.0) v = 1.0;
@@ -55,14 +58,22 @@ void DataProcessor::processRawData(const std::vector<int32_t>& data)
 
     std::vector<std::complex<double>> complexSpectrum = calculateFFT(windowed);
 
-    double scale_factor = 2.0 / windowed.size();
+    int N = static_cast<int>(windowed.size());
+    // Basic scale for single-sided spectrum (double-sided -> single-sided): 2/N
+    double scale_factor = 2.0 / static_cast<double>(N);
+    // Compensate for Hann window coherent gain (~0.5), so we multiply by 1/0.5 = 2
+    const double hann_correction = 1.0 / 0.5; // = 2.0
+    scale_factor *= hann_correction; // effectively 4.0 / N for Hann window
 
     std::vector<double> magnitudes;
     magnitudes.reserve(complexSpectrum.size());
-    for (const auto &c : complexSpectrum) {
-        double mag = std::hypot(c.real(), c.imag()) * scale_factor;
-        double db = (mag > 1e-6) ? 20.0 * std::log10(mag) : -120.0;
-        magnitudes.push_back(db);
+    for (size_t k = 0; k < complexSpectrum.size(); ++k) {
+        double mag = std::hypot(complexSpectrum[k].real(), complexSpectrum[k].imag()) * scale_factor;
+        // DC bin (k==0) and Nyquist (when present, k==N/2) should not be doubled for single-sided spectrum
+        if (k == 0 || (N % 2 == 0 && static_cast<int>(k) == N/2)) {
+            mag *= 0.5; // undo the doubling for these bins
+        }
+        magnitudes.push_back(mag);
     }
 
     emit FFTDataReady(magnitudes);
