@@ -1,4 +1,4 @@
-#include "OscillogramWidget.hh"
+#include "OscillogramWidget.h"
 #include <QPainter>
 #include <QPen>
 #include <QLinearGradient>
@@ -9,13 +9,12 @@ OscillogramWidget::OscillogramWidget(QWidget *parent)
     : QWidget(parent)
     , m_refreshTimer(new QTimer(this))
 {
-    // Ciemne tło okna
     setMinimumSize(800, 400);
     setWindowTitle("Przebieg czasowy sygnału audio");
 
     // Odświeżanie co ~33ms = ~30 FPS (wystarczająco płynne, a nie obciąża CPU)
     connect(m_refreshTimer, &QTimer::timeout, this, QOverload<>::of(&QWidget::update));
-    m_refreshTimer->start(33);
+    m_refreshTimer->start(refreshRate);
 }
 
 void OscillogramWidget::appendSamples(const std::vector<double>& data)
@@ -26,13 +25,14 @@ void OscillogramWidget::appendSamples(const std::vector<double>& data)
     }
 
     // Jeśli bufor przekroczył maksymalny rozmiar, usuń najstarsze próbki z przodu
-    while (static_cast<int>(m_buffer.size()) > BUFFER_SIZE) {
+    while (static_cast<int>(m_buffer.size()) > bufferSize) {
         m_buffer.pop_front();
     }
 }
 
 void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
 {
+    // ustawienia do rysowania
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
 
@@ -41,8 +41,8 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
 
     // === Tło ===
     QLinearGradient bgGrad(0, 0, 0, h);
-    bgGrad.setColorAt(0.0, QColor(15, 15, 25));
-    bgGrad.setColorAt(1.0, QColor(5, 5, 15));
+    bgGrad.setColorAt(0.0, QColor(25, 25, 35));
+    bgGrad.setColorAt(1.0, QColor(5, 5, 25));
     painter.fillRect(rect(), bgGrad);
 
     // === Siatka (grid) ===
@@ -57,7 +57,7 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
         painter.drawLine(0, y, w, y);
     }
 
-    // Linie pionowe — co 0.25 sekundy (8 linii na 2s)
+    // Linie pionowe — co 0.25 sekundy (20 linii na 5s)
     for (int i = 1; i < vertical_lines; ++i) {
         int x = w * i / vertical_lines;
         painter.drawLine(x, 0, x, h);
@@ -86,7 +86,7 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
     QPen wavePen(QBrush(lineGrad), 1.5);
     painter.setPen(wavePen);
 
-    // Decimacja: jeśli mamy więcej próbek niż pikseli szerokości — rysujemy min/max na piksel
+    // Decymacja: jeśli mamy więcej próbek niż pikseli szerokości — rysujemy min/max na piksel
     const double samplesPerPixel = static_cast<double>(bufSize) / w;
 
     if (samplesPerPixel <= 1.0) {
@@ -142,9 +142,9 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
     QFont labelFont("monospace", 9);
     painter.setFont(labelFont);
 
-    for (int i = 0; i <= 8; ++i) {
-        double timeSec = (DISPLAY_SECONDS * static_cast<double>(i)) / 8.0;
-        int x = w * i / 8;
+    for (int i = 0; i <= vertical_lines; ++i) {
+        double timeSec = (displaySeconds * static_cast<double>(i)) / static_cast<double>(vertical_lines);
+        int x = w * i / vertical_lines;
         QString label = QString::number(timeSec, 'f', 2) + "s";
         painter.drawText(x + 2, h - 5, label);
     }

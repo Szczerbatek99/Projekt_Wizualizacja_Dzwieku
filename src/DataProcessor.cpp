@@ -1,5 +1,5 @@
-#include "DataProcessor.hh"
-#include "config.hh"
+#include "DataProcessor.h"
+#include "config.h"
 #include <cmath>
 #include <algorithm>
 #include <fftw3.h>
@@ -20,14 +20,14 @@ void DataProcessor::applyHannWindow(std::vector<double>& data)
     }
 }
 
-std::vector<std::complex<double>> DataProcessor::calculateFFT(const std::vector<double>& windowedData)
+std::vector<std::complex<double>> DataProcessor::calculateFFT(const std::vector<double>& Data)
 {
-    int N = static_cast<int>(windowedData.size());
+    int N = static_cast<int>(Data.size());
     
     int outSize = N / 2 + 1;
     std::vector<std::complex<double>> complexSpectrum(outSize);
 
-    fftw_plan plan = fftw_plan_dft_r2c_1d(N, const_cast<double*>(windowedData.data()),
+    fftw_plan plan = fftw_plan_dft_r2c_1d(N, const_cast<double*>(Data.data()),
         reinterpret_cast<fftw_complex*>(complexSpectrum.data()), FFTW_ESTIMATE);
 
     fftw_execute(plan);
@@ -41,8 +41,6 @@ void DataProcessor::processRawData(const std::vector<int32_t>& data)
     if (static_cast<int>(data.size()) < samplesPacketSize) return;
     std::vector<double> normalizedData(samplesPacketSize);
 
-    // Normalize according to 32-bit signed samples sent by MCU (int32_t)
-    // Use 2^31 as denominator so -2^31 maps to -1.0 and +2^31-1 maps slightly below 1.0
     constexpr double scale = 1.0 / 2147483648.0;
     for (size_t i = 0; i < samplesPacketSize; ++i) {
         double v = static_cast<double>(data[i]) * scale;
@@ -53,25 +51,28 @@ void DataProcessor::processRawData(const std::vector<int32_t>& data)
 
     emit waveformDataReady(normalizedData);
 
-    std::vector<double> windowed = normalizedData;
-    applyHannWindow(windowed);
+    std::vector<double> windowedData = normalizedData;
+    applyHannWindow(windowedData);
 
-    std::vector<std::complex<double>> complexSpectrum = calculateFFT(windowed);
+    std::vector<std::complex<double>> complexSpectrum = calculateFFT(windowedData);
 
-    int N = static_cast<int>(windowed.size());
-    // Basic scale for single-sided spectrum (double-sided -> single-sided): 2/N
+    int N = static_cast<int>(windowedData.size());
+    
+    // Mnożnik dla widma jednostronnego z normalizacją
     double scale_factor = 2.0 / static_cast<double>(N);
-    // Compensate for Hann window coherent gain (~0.5), so we multiply by 1/0.5 = 2
-    const double hann_correction = 1.0 / 0.5; // = 2.0
-    scale_factor *= hann_correction; // effectively 4.0 / N for Hann window
+    // Mnożnik korekcji dla okienkowania
+    const double hann_correction = 1.0 / 0.5;
+    scale_factor *= hann_correction;
 
     std::vector<double> magnitudes;
     magnitudes.reserve(complexSpectrum.size());
+
     for (size_t k = 0; k < complexSpectrum.size(); ++k) {
         double mag = std::hypot(complexSpectrum[k].real(), complexSpectrum[k].imag()) * scale_factor;
-        // DC bin (k==0) and Nyquist (when present, k==N/2) should not be doubled for single-sided spectrum
+        // Prążek składowej stałej (DC, k==0) oraz prążek Nyquista (jeśli występuje, k==N/2) 
+        // nie powinny być podwajane w widmie jednostronnym
         if (k == 0 || (N % 2 == 0 && static_cast<int>(k) == N/2)) {
-            mag *= 0.5; // undo the doubling for these bins
+            mag *= 0.5; // cofnięcie podwojenia dla tych prążków
         }
         magnitudes.push_back(mag);
     }

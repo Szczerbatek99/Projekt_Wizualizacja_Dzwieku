@@ -24,9 +24,9 @@ public:
 public slots:
     /**
      * @brief Slot przyjmujący gotowe, policzone już widmo amplitudowe w skali decybelowej.
-     * @param magnitudesDb Wektor ze słupkami FFT [dB].
+     * @param magnitudes Wektor ze słupkami FFT.
      */
-    void updateSpectrum(const std::vector<double>& magnitudesDb);
+    void updateSpectrum(const std::vector<double>& magnitudes);
 
 protected:
     /**
@@ -35,10 +35,7 @@ protected:
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    static constexpr int FFT_SIZE = 1024;            ///< Rozmiar FFT (2^10)
-    static constexpr int SAMPLE_RATE = 16000;        ///< Częstotliwość próbkowania [Hz]
-
-    std::vector<double> m_magnitudeDb;  ///< Widmo amplitudowe w dB
-    QTimer *m_refreshTimer;             ///< Timer odświeżania ekranu
-    bool m_hasData = false;             ///< Flaga: czy mamy już dane do wyświetlenia
+    std::vector<double> m_magnitude;  // Widmo amplitudowe
+    QTimer *m_refreshTimer;             // Timer odświeżania ekranu
+    bool m_hasData = false;             // Flaga: czy mamy już dane do wyświetlenia
 };

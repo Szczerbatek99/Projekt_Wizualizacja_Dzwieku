@@ -1,5 +1,6 @@
 #pragma once
 
+#include "config.h"
 #include <QWidget>
 #include <QTimer>
 #include <vector>
@@ -32,18 +33,16 @@ public:
 public slots:
     /**
      * @brief Slot przyjmujący nową paczkę próbek audio (znormalizowane -1..1).
-     * @param data Wektor z próbkami (1024 próbki w paczce).
+     * @param data Wektor z próbkami (domyślnie 2048 próbek w paczce).
      */
     void appendSamples(const std::vector<double>& data);
 
 
 private:
-    static constexpr int SAMPLE_RATE = 16000;       ///< Częstotliwość próbkowania [Hz]
-    static constexpr int DISPLAY_SECONDS = 5;        ///< Czas wyświetlany na ekranie [s]
-    static constexpr int BUFFER_SIZE = SAMPLE_RATE * DISPLAY_SECONDS; ///< 32000 próbek
+    static constexpr int bufferSize = sampleRate * displaySeconds; // wielkość bufora w bajtach
 
-    std::deque<double> m_buffer;  ///< Bufor cykliczny na próbki (znormalizowane -1..1)
-    QTimer *m_refreshTimer;        ///< Timer odświeżania ekranu
+    std::deque<double> m_buffer;  // Bufor cykliczny na próbki (znormalizowane -1..1)
+    QTimer *m_refreshTimer;        // Timer odświeżania ekranu
 
     // Nie potrzebujemy już autoskalowania osi Y — dane są znormalizowane do [-1,1]
 

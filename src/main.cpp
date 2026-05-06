@@ -1,7 +1,7 @@
-#include "McuAudioReceiver.hh"
-#include "OscillogramWidget.hh"
-#include "FFTWidget.hh"
-#include "DataProcessor.hh"
+#include "McuAudioReceiver.h"
+#include "OscillogramWidget.h"
+#include "FFTWidget.h"
+#include "DataProcessor.h"
 #include <QApplication>
 #include <QDebug>
 

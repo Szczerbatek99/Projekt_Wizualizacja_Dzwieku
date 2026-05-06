@@ -33,11 +33,11 @@ set(SOURCES
 )
 
 set(HEADERS
-    inc/McuAudioReceiver.hh
-    inc/OscillogramWidget.hh
-    inc/FFTWidget.hh
-    inc/DataProcessor.hh
-    inc/config.hh
+    inc/McuAudioReceiver.h
+    inc/OscillogramWidget.h
+    inc/FFTWidget.h
+    inc/DataProcessor.h
+    inc/config.h
 )
 
 add_executable(SoundVisualizer
