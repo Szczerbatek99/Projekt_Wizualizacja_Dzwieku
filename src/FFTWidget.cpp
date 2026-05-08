@@ -12,7 +12,7 @@ FFTWidget::FFTWidget(QWidget *parent)
     , m_refreshTimer(new QTimer(this))
 {
     setMinimumSize(800, 400);
-    setWindowTitle("Widmo częstotliwościowe (FFT)");
+    // Ten widget jest osadzony w MainWindow; nie ustawiamy tytułu okna.
 
     // Odświeżanie ~30 FPS
     connect(m_refreshTimer, &QTimer::timeout, this, QOverload<>::of(&QWidget::update));

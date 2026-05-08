@@ -10,7 +10,7 @@ OscillogramWidget::OscillogramWidget(QWidget *parent)
     , m_refreshTimer(new QTimer(this))
 {
     setMinimumSize(800, 400);
-    setWindowTitle("Przebieg czasowy sygnału audio");
+    // Ten widget jest osadzony w MainWindow; nie ustawiamy tytułu okna.
 
     // Odświeżanie co ~33ms = ~30 FPS (wystarczająco płynne, a nie obciąża CPU)
     connect(m_refreshTimer, &QTimer::timeout, this, QOverload<>::of(&QWidget::update));
