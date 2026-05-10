@@ -7,10 +7,19 @@
  * @brief Plik zawierający stałe wartości używane w całej aplikacji.
  */
 
+// ==========================================
+// USTAWIENIA KOMUNIKACJI (UART/USB)
+// ==========================================
+
 /**
  * @brief Nazwa portu szeregowego.
  */
 const QString portName = "/dev/ttyACM0";
+
+/**
+ * @brief Zapis słowa startu ramki w hexadecymalnym.
+ */
+const char* const SYNC = "AA55AA55";
 
 /**
  * @brief Szybkość transmisji danych w b/s (domyślnie 115200 b/s).
@@ -19,10 +28,10 @@ const QString portName = "/dev/ttyACM0";
  */
 constexpr int baudRate = 115200;
 
-/**
- * @brief Rozmiar liczby próbek wysyłanych w jednym pakiecie z MCU.
- */
-constexpr size_t samplesPacketSize = 2048;
+
+// ==========================================
+// PARAMETRY SYGNAŁU AUDIO I PACZEK
+// ==========================================
 
 /**
  * @brief Częstotliwość próbkowania mikrofonu.
@@ -30,11 +39,36 @@ constexpr size_t samplesPacketSize = 2048;
 constexpr int sampleRate = 16000;
 
 /**
- * @brief Czas wyświetlanej historii dźwięku.
+ * @brief Rozmiar liczby próbek wysyłanych w jednym pakiecie z MCU.
+ */
+constexpr size_t samplesPacketSize = 256;
+
+
+// ==========================================
+// PARAMETRY ANALIZY DSP I BUFORÓW
+// ==========================================
+
+/**
+ * @brief Rozmiar okna analitycznego do obliczania FFT.
+ */
+constexpr int fftWindowSize = 2048;
+
+/**
+ * @brief Czas wyświetlanej historii dźwięku w oscyloskopie.
  */
 constexpr int displaySeconds = 5;
 
 /**
- * @brief Czas odświeżania w ms.
+ * @brief Wielkość bufora oscyloskopu w liczbie próbek.
  */
-constexpr int refreshRate = 33;
+constexpr int oscillogramBufferSize = sampleRate * displaySeconds;
+
+
+// ==========================================
+// USTAWIENIA INTERFEJSU UŻYTKOWNIKA (UI)
+// ==========================================
+
+/**
+ * @brief Czas odświeżania widgetów w ms (np. 33 ms to ~30 FPS).
+ */
+constexpr int refreshRate = 16;

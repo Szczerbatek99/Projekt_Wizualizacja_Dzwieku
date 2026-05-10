@@ -25,7 +25,7 @@ void OscillogramWidget::appendSamples(const std::vector<double>& data)
     }
 
     // Jeśli bufor przekroczył maksymalny rozmiar, usuń najstarsze próbki z przodu
-    while (static_cast<int>(m_buffer.size()) > bufferSize) {
+    while (static_cast<int>(m_buffer.size()) > oscillogramBufferSize) {
         m_buffer.pop_front();
     }
 }

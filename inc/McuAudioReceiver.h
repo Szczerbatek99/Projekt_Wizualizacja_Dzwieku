@@ -75,8 +75,18 @@ private slots:
     void handleError(QSerialPort::SerialPortError serialPortError);
 
 private:
+    /**
+     * @brief Flaga określająca, czy odbiornik jest aktywny i nasłuchuje na dane.
+     */
     bool m_isActive = false;
     
+    /**
+     * @brief Wskaźnik na port szeregowy używany do komunikacji.
+     */
     QSerialPort *m_serialPort;
+
+    /**
+     * @brief Bufor gromadzący surowe bajty odebrane z mikrokontrolera.
+     */
     QByteArray m_buffer;
 };

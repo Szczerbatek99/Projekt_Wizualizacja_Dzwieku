@@ -8,7 +8,8 @@
 DataProcessor::DataProcessor(QObject *parent):
     QObject(parent)
 {
-    
+    // Wypełniamy bufor zerami na start, by od razu miał poprawny rozmiar do analizy
+    m_fftBuffer.resize(fftWindowSize, 0.0);
 }
 
 void DataProcessor::applyHannWindow(std::vector<double>& data)
@@ -47,11 +48,21 @@ void DataProcessor::processRawData(const std::vector<int32_t>& data)
         if (v > 1.0) v = 1.0;
         else if (v < -1.0) v = -1.0;
         normalizedData[i] = v;
+        
+        // Dodawanie znormalizowanej próbki na koniec bufora kołowego
+        m_fftBuffer.push_back(v);
     }
 
+    // Utrzymanie stałego rozmiaru bufora kołowego dla FFT
+    while (static_cast<int>(m_fftBuffer.size()) > fftWindowSize) {
+        m_fftBuffer.pop_front();
+    }
+
+    // Emitowanie małej, znormalizowanej paczki do oscylogramu (szybkie odświeżanie UI)
     emit waveformDataReady(normalizedData);
 
-    std::vector<double> windowedData = normalizedData;
+    // Kopiowanie pełnego, 2048-elementowego bufora do wektora analitycznego
+    std::vector<double> windowedData(m_fftBuffer.begin(), m_fftBuffer.end());
     applyHannWindow(windowedData);
 
     std::vector<std::complex<double>> complexSpectrum = calculateFFT(windowedData);

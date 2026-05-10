@@ -23,27 +23,34 @@ public:
      * @param parent Wskaźnik na element nadrzędny.
      */
     explicit OscillogramWidget(QWidget *parent = nullptr);
+
+    /**
+     * @brief Destruktor klasy OscillogramWidget.
+     */
     ~OscillogramWidget() override = default;
     
     /**
      * @brief Rysuje przebieg audio na widgecie.
+     * @param event Zdarzenie odrysowania (Paint event).
      */
     void paintEvent(QPaintEvent *event) override;
 
 public slots:
     /**
      * @brief Slot przyjmujący nową paczkę próbek audio (znormalizowane -1..1).
-     * @param data Wektor z próbkami (domyślnie 2048 próbek w paczce).
+     * @param data Wektor z próbkami.
      */
     void appendSamples(const std::vector<double>& data);
 
 
 private:
-    static constexpr int bufferSize = sampleRate * displaySeconds; // wielkość bufora w bajtach
+    /**
+     * @brief Bufor cykliczny na próbki (znormalizowane od -1.0 do 1.0).
+     */
+    std::deque<double> m_buffer;
 
-    std::deque<double> m_buffer;  // Bufor cykliczny na próbki (znormalizowane -1..1)
-    QTimer *m_refreshTimer;        // Timer odświeżania ekranu
-
-    // Nie potrzebujemy już autoskalowania osi Y — dane są znormalizowane do [-1,1]
-
+    /**
+     * @brief Timer odpowiedzialny za odświeżanie ekranu.
+     */
+    QTimer *m_refreshTimer;
 };

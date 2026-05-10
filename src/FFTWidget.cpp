@@ -14,9 +14,9 @@ FFTWidget::FFTWidget(QWidget *parent)
     setMinimumSize(800, 400);
     // Ten widget jest osadzony w MainWindow; nie ustawiamy tytułu okna.
 
-    // Odświeżanie ~30 FPS
+    // Odświeżanie używające globalnego czasu odświeżania z config.h
     connect(m_refreshTimer, &QTimer::timeout, this, QOverload<>::of(&QWidget::update));
-    m_refreshTimer->start(33);
+    m_refreshTimer->start(refreshRate);
 }
 
 void FFTWidget::updateSpectrum(const std::vector<double>& magnitudes)

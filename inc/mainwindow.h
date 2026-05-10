@@ -36,7 +36,7 @@ private slots:
     void on_Powrot_muz_b_clicked();
 
     // Przyciski menu głównego
-
+    
     void on_WidokAn_b_clicked();
     void on_WidokMuz_b_clicked();
     void on_Opcje_b_clicked();

@@ -19,6 +19,10 @@ public:
      * @param parent Wskaźnik na element nadrzędny.
      */
     explicit FFTWidget(QWidget *parent = nullptr);
+
+    /**
+     * @brief Destruktor klasy FFTWidget.
+     */
     ~FFTWidget() override = default;
 
 public slots:
@@ -31,11 +35,23 @@ public slots:
 protected:
     /**
      * @brief Rysuje widmo częstotliwościowe na widgecie.
+     * @param event Zdarzenie odrysowania (Paint event).
      */
     void paintEvent(QPaintEvent *event) override;
 
 private:
-    std::vector<double> m_magnitude;  // Widmo amplitudowe
-    QTimer *m_refreshTimer;             // Timer odświeżania ekranu
-    bool m_hasData = false;             // Flaga: czy mamy już dane do wyświetlenia
+    /**
+     * @brief Widmo amplitudowe.
+     */
+    std::vector<double> m_magnitude;
+
+    /**
+     * @brief Timer odświeżania ekranu.
+     */
+    QTimer *m_refreshTimer;
+
+    /**
+     * @brief Flaga informująca, czy mamy już dane do wyświetlenia.
+     */
+    bool m_hasData = false;
 };
