@@ -9,7 +9,7 @@ OscillogramWidget::OscillogramWidget(QWidget *parent)
     : QWidget(parent)
     , m_refreshTimer(new QTimer(this))
 {
-    setMinimumSize(800, 400);
+    setMinimumSize(200, 100);
     // Ten widget jest osadzony w MainWindow; nie ustawiamy tytułu okna.
 
     // Odświeżanie co ~33ms = ~30 FPS (wystarczająco płynne, a nie obciąża CPU)
@@ -30,6 +30,16 @@ void OscillogramWidget::appendSamples(const std::vector<double>& data)
     }
 }
 
+void OscillogramWidget::updateTime(double timeSec)
+{
+    if (timeSec > 0.0) m_displayTimeSec = timeSec;
+}
+
+void OscillogramWidget::updateGain(double gain)
+{
+    if (gain > 0.0) m_gain = gain;
+}
+
 void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
 {
     // ustawienia do rysowania
@@ -48,8 +58,8 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
     // === Siatka (grid) ===
     painter.setPen(QPen(QColor(40, 40, 60), 1, Qt::DotLine));
     
-    constexpr int horizontal_lines = 5;
-    constexpr int vertical_lines = 20;
+    constexpr int horizontal_lines = 6;
+    constexpr int vertical_lines = 24;
 
     // Linie poziome (5 linii)
     for (int i = 1; i < horizontal_lines; ++i) {
@@ -69,8 +79,11 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
     painter.drawLine(0, zeroY, w, zeroY);
 
     // === Przebieg audio ===
-    const int bufSize = static_cast<int>(m_buffer.size());
+    int samplesToDisplay = static_cast<int>(m_displayTimeSec * sampleRate);
+    const int bufSize = std::min(samplesToDisplay, static_cast<int>(m_buffer.size()));
     if (bufSize < 2) return; // za mało danych
+
+    int startIndex = static_cast<int>(m_buffer.size()) - bufSize;
 
     // Ustalona skala Y: dane znormalizowane w zakresie [-1, 1]
     const double margin = 0.05; // 5% marginesu górnego i dolnego
@@ -94,7 +107,7 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
         QPointF prev;
         for (int i = 0; i < bufSize; ++i) {
             double x = (static_cast<double>(i) / (bufSize - 1)) * w;
-            double n = static_cast<double>(m_buffer[i]); // wartość w [-1,1]
+            double n = std::clamp(static_cast<double>(m_buffer[startIndex + i]) * m_gain, -1.0, 1.0); // wartość z gain w [-1,1]
             double v = (n + 1.0) * 0.5; // zamiana na [0,1]
             double y = topMargin + (1.0 - v) * usableH;
 
@@ -112,12 +125,15 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
             int startSample = static_cast<int>(px * samplesPerPixel);
             int endSample = std::min(static_cast<int>((px + 1) * samplesPerPixel), bufSize);
 
-            double localMin = m_buffer[startSample];
-            double localMax = m_buffer[startSample];
+            double localMin = m_buffer[startIndex + startSample];
+            double localMax = m_buffer[startIndex + startSample];
             for (int s = startSample + 1; s < endSample; ++s) {
-                if (m_buffer[s] < localMin) localMin = m_buffer[s];
-                if (m_buffer[s] > localMax) localMax = m_buffer[s];
+                if (m_buffer[startIndex + s] < localMin) localMin = m_buffer[startIndex + s];
+                if (m_buffer[startIndex + s] > localMax) localMax = m_buffer[startIndex + s];
             }
+
+            localMin = std::clamp(localMin * m_gain, -1.0, 1.0);
+            localMax = std::clamp(localMax * m_gain, -1.0, 1.0);
 
             double vMax = (localMax + 1.0) * 0.5;
             double vMin = (localMin + 1.0) * 0.5;
@@ -143,7 +159,7 @@ void OscillogramWidget::paintEvent(QPaintEvent * /*event*/)
     painter.setFont(labelFont);
 
     for (int i = 0; i <= vertical_lines; ++i) {
-        double timeSec = (displaySeconds * static_cast<double>(i)) / static_cast<double>(vertical_lines);
+        double timeSec = (m_displayTimeSec * static_cast<double>(i)) / static_cast<double>(vertical_lines);
         int x = w * i / vertical_lines;
         QString label = QString::number(timeSec, 'f', 2) + "s";
         painter.drawText(x + 2, h - 5, label);

@@ -42,8 +42,21 @@ public slots:
      */
     void appendSamples(const std::vector<double>& data);
 
+    /**
+     * @brief Slot aktualizujący ilość czasu wyświetlanego na oscylogramie.
+     * @param timeSec Czas w sekundach.
+     */
+    void updateTime(double timeSec);
+
+    /**
+     * @brief Slot aktualizujący wzmocnienie (przybliżenie osi Y) przebiegu.
+     * @param gain Mnożnik amplitudy.
+     */
+    void updateGain(double gain);
 
 private:
+    double m_displayTimeSec = displaySeconds; // z config.h
+    double m_gain = 1.0;
     /**
      * @brief Bufor cykliczny na próbki (znormalizowane od -1.0 do 1.0).
      */

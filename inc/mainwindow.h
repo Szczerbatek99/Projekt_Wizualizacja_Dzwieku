@@ -5,6 +5,13 @@
 #include "McuAudioReceiver.h"
 #include "DataProcessor.h"
 
+enum class FromWhere {
+    MainMenu,
+    Analytics,
+    Musical
+};
+
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -23,22 +30,31 @@ private:
     McuAudioReceiver* receiver;
     DataProcessor* processor;
 
+    FromWhere back_option;
+
+
 private slots:
-
-    // przyciski widoku analitycznego
-
-    void on_FFT_b_clicked();
-    void on_Osc_Spekt_b_clicked();
-    void on_Powrot_an_b_clicked();
-
-    // przyciski widoku muzycznego
-
-    void on_Powrot_muz_b_clicked();
-
-    // Przyciski menu głównego
-    
-    void on_WidokAn_b_clicked();
-    void on_WidokMuz_b_clicked();
+    // Przyciski od Opcji
+    void on_Opcje_an_b_clicked();
+    void on_Opcje_muz_b_clicked();
     void on_Opcje_b_clicked();
-    void on_Wyjscie_b_clicked();
+
+    void on_Powrot_opcje_b_clicked();
+
+    // --- Kontrolki w Opcjach (Slidery i SpinBoxy) ---
+    // FFT min freq
+    void on_FFT_minfreq_s_valueChanged(int value);
+    void on_FFT_minfreq_sb_valueChanged(int arg1);
+
+    // FFT max freq
+    void on_FFT_maxfreq_s_valueChanged(int value);
+    void on_FFT_maxfreq_sb_valueChanged(int arg1);
+
+    // Oscyloskop Time
+    void on_Osc_time_s_valueChanged(int value);
+    void on_Osc_time_dsb_valueChanged(double arg1);
+
+    // Oscyloskop Gain
+    void on_Osc_gain_s_valueChanged(int value);
+    void on_Osc_gain_dsb_valueChanged(double arg1);
 };

@@ -6,49 +6,251 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1200</width>
-    <height>600</height>
+    <width>1280</width>
+    <height>720</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1280</width>
+    <height>720</height>
+   </size>
   </property>
   <property name="font">
    <font>
+    <family>Segoe UI</family>
     <pointsize>12</pointsize>
    </font>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">/* === GŁÓWNE OKNO (Powrót do eleganckiego Dark Mode) === */
+QMainWindow, #MainWindow, #MainLayout {
+    /* Głęboki, ciemny gradient - powrót do pierwotnej, mrocznej palety */
+    background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, 
+                                stop:0 #1A1B26, stop:1 #24283B);
+}
+
+/* === STYLIZACJA GŁÓWNEGO TYTUŁU (Tytul_l) - Wersja Neon-Kapsuła === */
+#Tytul_l {
+    color: #FFFFFF;
+    font-size: 34px;              /* Odrobinę większy */
+    font-weight: 900;             /* Maksymalny Bold */
+    letter-spacing: 6px;          /* Jeszcze nowocześniejszy rozstaw */
+    padding: 12px 30px;
+    qproperty-alignment: 'AlignCenter'; /* Wyśrodkowanie napisu (wymaga Qt5/6) */
+
+    /* 1. FAJNY GRADIENT: Centralny, eliptyczny. 
+       Ciemniejszy środek, rozjaśniający się ku brzegom, co daje efekt 3D. */
+    background: qradialgradient(cx:0.5, cy:0.5, radius:0.8, fx:0.5, fy:0.5,
+                                stop:0 rgba(26, 27, 38, 0.6),  /* Środek ciemny jak tło */
+                                stop:0.7 rgba(61, 89, 161, 0.5), /* Przejście w niebieski */
+                                stop:1 rgba(122, 162, 247, 0.2)); /* Jasne krawędzie */
+
+    /* 2. KRAWDĘDZIE: Pełna ramka, ale boki grubsze i świecące */
+    border: 2px solid rgba(122, 162, 247, 0.3); /* Delikatna ramka góra/dół */
+    border-left: 6px solid #7AA2F7;             /* Mocny akcent lewo */
+    border-right: 6px solid #7AA2F7;            /* Mocny akcent prawo */
+    
+    /* 3. KSZTAŁT: Zaokrąglamy rogi, tworząc kapsułę */
+    border-radius: 15px;
+
+    /* 4. CIEŃ/BLASK: Delikatny wewnetrzny blask (tylko góra/dół) */
+    /* Niestety QSS nie ma box-shadow, więc symulujemy to grubym, przezroczystym paddingiem góra/dół w ramce, 
+       ale najlepszy efekt daje gradient radialny powyżej. */
+
+    margin: 10px auto 25px auto; /* Centrowanie belki w layoutcie i margines na dole */
+}
+
+#Opcje_b,
+#WidokAn_b,
+#WidokMuz_b,
+#Wyjscie_b {
+font-size: 24px;
+}
+
+#Opcje_Osc_l,
+#Opcje_FFT_l {
+font-size: 24px;
+}
+
+/* === &quot;SZKLANE&quot; WARSTWY (Ostateczna Lista) === */
+#Widoki_sw, 
+#MainMenu_w, 
+#Opcje_w, 
+#WidokAnalityczny_w, 
+#WidokMuzyczny_w,
+#Widoki_an_sw,
+#Widoki_muz_sw,
+#FFT_w,
+#Osc_Spekt_w,
+#Osc_w,
+#Spekt_w,
+#Pianino_w,
+#Pieciolinia_w {
+    background: transparent;
+    border: none; /* Dodatkowo usuwamy ewentualne domyślne ramki */
+}
+
+/* === DOMYŚLNY TEKST === */
+QWidget {
+    color: #C0CAF5; 
+    font-family: &quot;Segoe UI&quot;, &quot;Ubuntu&quot;, Arial, sans-serif;
+}
+
+/* === ZWYKŁE NAPISY (QLabel) === */
+QLabel {
+    color: #C0CAF5;
+    font-size: 18px; /* Zostawiamy duże napisy */
+    font-weight: bold;
+    background: transparent; 
+}
+
+/* === STYL SLIDERA === */
+QSlider {
+    background: transparent;
+}
+QSlider::groove:horizontal {
+    border: 1px solid #414868;
+    height: 10px;
+    background: #16161E; 
+    border-radius: 5px;
+}
+QSlider::sub-page:horizontal {
+    background: #3D59A1; 
+    border: 1px solid #274472;
+    height: 10px;
+    border-radius: 5px;
+}
+QSlider::add-page:horizontal {
+    background: #16161E;
+    border: 1px solid #414868;
+    height: 10px;
+    border-radius: 5px;
+}
+QSlider::handle:horizontal {
+    background: #7AA2F7; 
+    border: 2px solid #C0CAF5;
+    width: 22px; 
+    height: 22px; 
+    margin: -6px 0;
+    border-radius: 11px;
+}
+QSlider::handle:horizontal:hover {
+    background: #89B4FA;
+    border: 2px solid #FFFFFF;
+}
+
+/* === STYL SPINBOXA &amp; DOUBLE SPINBOXA === */
+QSpinBox, QDoubleSpinBox {
+    border: 2px solid #414868;
+    border-radius: 6px;
+    padding: 6px 10px;
+    background-color: #16161E; /* Bardzo ciemne tło dla kontrastu */
+    color: #7AA2F7; 
+    font-size: 18px; /* Duże liczby */
+    font-weight: bold;
+    selection-background-color: #3D59A1;
+    selection-color: white;
+}
+
+QSpinBox:focus, QDoubleSpinBox:focus {
+    border: 2px solid #7AA2F7;
+    background-color: #1A1B26;
+}
+
+/* Przyciski wewnątrz Spinboxa */
+QSpinBox::up-button, QDoubleSpinBox::up-button {
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 28px;
+    border-left: 2px solid #414868;
+    border-top-right-radius: 4px;
+    background-color: #24283B;
+}
+QSpinBox::down-button, QDoubleSpinBox::down-button {
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 28px;
+    border-left: 2px solid #414868;
+    border-top: 1px solid #414868;
+    border-bottom-right-radius: 4px;
+    background-color: #24283B;
+}
+
+/* === STRZAŁKI SVG === */
+QSpinBox::up-arrow, QDoubleSpinBox::up-arrow {
+    image: url(&quot;/home/jakub/studia/programowanie/C++/WDS/graphics/w_gore.svg&quot;);
+    width: 14px;
+    height: 14px;
+}
+QSpinBox::down-arrow, QDoubleSpinBox::down-arrow {
+    image: url(&quot;/home/jakub/studia/programowanie/C++/WDS/graphics/w_dol.svg&quot;);
+    width: 14px;
+    height: 14px;
+}
+
+/* === PRZYCISKI (QPushButton) === */
+QPushButton {
+    background-color: #3D59A1;
+    color: #FFFFFF;
+    border: 1px solid #274472;
+    border-radius: 6px;
+    padding: 8px 18px;
+    font-size: 18px; /* Duży tekst na przycisku */
+    font-weight: bold;
+}
+QPushButton:hover {
+    background-color: #7AA2F7;
+    color: #16161E; 
+}
+
+/* === RAMKI Z TYTUŁEM (QGroupBox) === */
+QGroupBox {
+    border: 2px solid #414868;
+    border-radius: 6px;
+    margin-top: 16px;
+    background-color: rgba(36, 40, 59, 0.4); /* Lekko przezroczyste wnętrze */
+}
+QGroupBox::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    left: 10px;
+    padding: 0 5px;
+    color: #7AA2F7;
+    font-size: 16px; 
+    font-weight: bold;
+}</string>
+  </property>
   <widget class="QWidget" name="MainLayout">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-    <item>
-     <widget class="QLabel" name="Tytul_l">
-      <property name="font">
-       <font>
-        <pointsize>20</pointsize>
-        <bold>true</bold>
-       </font>
-      </property>
-      <property name="text">
-       <string>SoundVisualizer</string>
-      </property>
-      <property name="alignment">
-       <set>Qt::AlignCenter</set>
-      </property>
-     </widget>
-    </item>
+   <layout class="QVBoxLayout" name="verticalLayout_13" stretch="0">
+    <property name="spacing">
+     <number>6</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
     <item>
      <widget class="QStackedWidget" name="Widoki_sw">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Opcje_w">
        <widget class="QWidget" name="layoutWidget_2">
         <property name="geometry">
          <rect>
-          <x>300</x>
+          <x>320</x>
           <y>60</y>
           <width>243</width>
-          <height>321</height>
+          <height>341</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_10">
@@ -56,7 +258,7 @@
           <number>20</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_5">
+          <widget class="QLabel" name="Opcje_FFT_l">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -65,7 +267,9 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>18</pointsize>
+             <family>Segoe UI</family>
+             <pointsize>-1</pointsize>
+             <bold>true</bold>
             </font>
            </property>
            <property name="text">
@@ -105,13 +309,26 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximum">
+              <number>8000</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="FFT_minfreq_sb"/>
+            <widget class="QSpinBox" name="FFT_minfreq_sb">
+             <property name="maximum">
+              <number>8000</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -135,13 +352,32 @@
            </item>
            <item>
             <widget class="QSlider" name="FFT_maxfreq_s">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="maximum">
+              <number>8000</number>
+             </property>
+             <property name="value">
+              <number>8000</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QSpinBox" name="FFT_maxfreq_sb"/>
+            <widget class="QSpinBox" name="FFT_maxfreq_sb">
+             <property name="maximum">
+              <number>8000</number>
+             </property>
+             <property name="value">
+              <number>8000</number>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -151,8 +387,8 @@
         <property name="geometry">
          <rect>
           <x>40</x>
-          <y>480</y>
-          <width>101</width>
+          <y>520</y>
+          <width>151</width>
           <height>31</height>
          </rect>
         </property>
@@ -160,13 +396,13 @@
          <string>Powrót</string>
         </property>
        </widget>
-       <widget class="QWidget" name="">
+       <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>30</x>
+          <x>40</x>
           <y>60</y>
-          <width>243</width>
-          <height>321</height>
+          <width>251</width>
+          <height>341</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -174,7 +410,7 @@
           <number>20</number>
          </property>
          <item>
-          <widget class="QLabel" name="label_4">
+          <widget class="QLabel" name="Opcje_Osc_l">
            <property name="sizePolicy">
             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
              <horstretch>0</horstretch>
@@ -183,7 +419,9 @@
            </property>
            <property name="font">
             <font>
-             <pointsize>18</pointsize>
+             <family>Segoe UI</family>
+             <pointsize>-1</pointsize>
+             <bold>true</bold>
             </font>
            </property>
            <property name="text">
@@ -220,13 +458,50 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="singleStep">
+              <number>1</number>
+             </property>
+             <property name="pageStep">
+              <number>10</number>
+             </property>
+             <property name="value">
+              <number>50</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="Osc_time_dsb"/>
+            <widget class="QDoubleSpinBox" name="Osc_time_dsb">
+             <property name="minimum">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+             <property name="stepType">
+              <enum>QAbstractSpinBox::DefaultStepType</enum>
+             </property>
+             <property name="value">
+              <double>5.000000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -250,13 +525,38 @@
            </item>
            <item>
             <widget class="QSlider" name="Osc_gain_s">
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>30</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <number>10</number>
+             </property>
+             <property name="maximum">
+              <number>100</number>
+             </property>
+             <property name="value">
+              <number>10</number>
+             </property>
              <property name="orientation">
               <enum>Qt::Horizontal</enum>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="Osc_gain_dsb"/>
+            <widget class="QDoubleSpinBox" name="Osc_gain_dsb">
+             <property name="minimum">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>10.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>0.100000000000000</double>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>
@@ -267,6 +567,9 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QHBoxLayout" name="horizontal_layout_11">
+          <property name="bottomMargin">
+           <number>20</number>
+          </property>
           <item>
            <widget class="QPushButton" name="Powrot_an_b">
             <property name="sizePolicy">
@@ -277,8 +580,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -296,8 +599,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -315,8 +618,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -334,8 +637,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -348,15 +651,15 @@
         <item>
          <widget class="QStackedWidget" name="Widoki_an_sw">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="Osc_Spekt_w">
-           <layout class="QVBoxLayout" name="verticalLayout_2" stretch="1,1">
-            <item>
-             <widget class="FFTWidget" name="Spekt_w" native="true"/>
-            </item>
+           <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
             <item>
              <widget class="OscillogramWidget" name="Osc_w" native="true"/>
+            </item>
+            <item>
+             <widget class="FFTWidget" name="Spekt_w" native="true"/>
             </item>
            </layout>
           </widget>
@@ -369,6 +672,9 @@
        <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <layout class="QHBoxLayout" name="horizontal_layout_10">
+          <property name="bottomMargin">
+           <number>20</number>
+          </property>
           <item>
            <widget class="QPushButton" name="Powrot_muz_b">
             <property name="sizePolicy">
@@ -379,8 +685,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -398,8 +704,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -417,8 +723,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -436,8 +742,8 @@
             </property>
             <property name="minimumSize">
              <size>
-              <width>180</width>
-              <height>30</height>
+              <width>120</width>
+              <height>40</height>
              </size>
             </property>
             <property name="text">
@@ -456,165 +762,194 @@
        </layout>
       </widget>
       <widget class="QWidget" name="MainMenu_w">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <spacer name="horizontalSpacer_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
+         <widget class="QLabel" name="Tytul_l">
+          <property name="font">
+           <font>
+            <family>Segoe UI</family>
+            <pointsize>-1</pointsize>
+            <bold>true</bold>
+           </font>
           </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
+          <property name="text">
+           <string>SoundVisualizer</string>
           </property>
-         </spacer>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+         </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_4">
-          <property name="spacing">
-           <number>20</number>
-          </property>
+         <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <spacer name="verticalSpacer_2">
+           <spacer name="horizontalSpacer_2">
             <property name="orientation">
-             <enum>Qt::Vertical</enum>
+             <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>20</width>
-              <height>40</height>
+              <width>233</width>
+              <height>14</height>
              </size>
             </property>
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="WidokAn_b">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>13</pointsize>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Widok Analityczny</string>
-            </property>
-           </widget>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <spacer name="verticalSpacer_2">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <layout class="QVBoxLayout" name="verticalLayout_4">
+              <property name="spacing">
+               <number>30</number>
+              </property>
+              <item>
+               <widget class="QPushButton" name="WidokAn_b">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>250</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>-1</pointsize>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Widok Analityczny</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="WidokMuz_b">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>250</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>-1</pointsize>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Widok Muzyczny</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="Opcje_b">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>250</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>-1</pointsize>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Opcje</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="Wyjscie_b">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>250</width>
+                  <height>80</height>
+                 </size>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Segoe UI</family>
+                  <pointsize>-1</pointsize>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Wyjście</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="verticalSpacer">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>40</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
           </item>
           <item>
-           <widget class="QPushButton" name="WidokMuz_b">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>13</pointsize>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Widok Muzyczny</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="Opcje_b">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>13</pointsize>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Opcje</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="Wyjscie_b">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>60</height>
-             </size>
-            </property>
-            <property name="font">
-             <font>
-              <pointsize>13</pointsize>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Wyjście</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="verticalSpacer">
+           <spacer name="horizontalSpacer">
             <property name="orientation">
-             <enum>Qt::Vertical</enum>
+             <enum>Qt::Horizontal</enum>
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>20</width>
-              <height>40</height>
+              <width>234</width>
+              <height>14</height>
              </size>
             </property>
            </spacer>
           </item>
          </layout>
-        </item>
-        <item>
-         <spacer name="horizontalSpacer">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>40</width>
-            <height>20</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </widget>

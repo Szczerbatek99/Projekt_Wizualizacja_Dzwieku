@@ -22,7 +22,7 @@ if(NOT FFTW_LIBRARY)
 endif()
 
 # Znajdowanie Qt6
-find_package(Qt6 COMPONENTS Core Widgets SerialPort REQUIRED)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets SerialPort)
 
 # Lista plików - najlepiej podawać pełne ścieżki
 set(SOURCES
@@ -42,6 +42,7 @@ set(HEADERS
     inc/DataProcessor.h
     inc/config.h
     inc/mainwindow.h
+    inc/style.h
 )
 
 add_executable(SoundVisualizer ${SOURCES} ${HEADERS})

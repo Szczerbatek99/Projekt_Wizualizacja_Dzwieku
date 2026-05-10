@@ -72,3 +72,4 @@ constexpr int oscillogramBufferSize = sampleRate * displaySeconds;
  * @brief Czas odświeżania widgetów w ms (np. 33 ms to ~30 FPS).
  */
 constexpr int refreshRate = 16;
+
