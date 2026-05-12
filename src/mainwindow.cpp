@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "OscillogramWidget.h"
 #include "FFTWidget.h"
+#include "SpectrogramWidget.h"
 #include "style.h"
 
 #include <iostream>
@@ -12,8 +13,8 @@ MainWindow::MainWindow(QWidget *parent):
     ui->setupUi(this);
 
     // --- NAWIGACJA: MENU GŁÓWNE ---
-    connect(ui->WidokAn_b, &QPushButton::clicked, [this]() { ui->Widoki_sw->setCurrentWidget(ui->WidokAnalityczny_w); });
-    connect(ui->WidokMuz_b, &QPushButton::clicked, [this]() { ui->Widoki_sw->setCurrentWidget(ui->WidokMuzyczny_w); });
+    connect(ui->WidokAn_b, &QPushButton::clicked, [this]() { ui->Widoki_sw->setCurrentWidget(ui->WidokAnalityczny_w); emit(needToCalc(Needed::Analytics));});
+    connect(ui->WidokMuz_b, &QPushButton::clicked, [this]() { ui->Widoki_sw->setCurrentWidget(ui->WidokMuzyczny_w); emit(needToCalc(Needed::Musical));});
     connect(ui->Wyjscie_b,  &QPushButton::clicked, this, &QMainWindow::close);
 
     // --- NAWIGACJA: WIDOK ANALITYCZNY ---
@@ -25,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent):
     connect(ui->Pianino_b,    &QPushButton::clicked, [this]() { ui->Widoki_muz_sw->setCurrentWidget(ui->Pianino_w); });
     connect(ui->Pieciolinia_b, &QPushButton::clicked, [this]() { ui->Widoki_muz_sw->setCurrentWidget(ui->Pieciolinia_w); });
     connect(ui->Powrot_muz_b,  &QPushButton::clicked, [this]() { ui->Widoki_sw->setCurrentWidget(ui->MainMenu_w); });
+
 
     this->setStyleSheet(myTheme);
 
@@ -39,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent):
     receiver = new McuAudioReceiver();
     processor = new DataProcessor();
     
+    connect(this, &MainWindow::needToCalc, processor, &DataProcessor::whatsNeeded);
+
     receiver->moveToThread(thread);
     processor->moveToThread(thread);
 
@@ -53,11 +57,20 @@ MainWindow::MainWindow(QWidget *parent):
         qWarning() << "Nie znaleziono widgetu Oscillogram w MainWindow UI";
     }
     
-    if (ui->Spekt_w) { // TUTAJ Spekt_w JEST TYLKO NA CHWILĘ TO JEST TAK NAPRAWDĘ FFT
+    // Podłączenie spektrogramu (widmo FFT -> kolumna spektrogramu)
+    if (ui->Spekt_w) {
         QObject::connect(processor, &DataProcessor::FFTDataReady,
-                         ui->Spekt_w, &FFTWidget::updateSpectrum);
+                         ui->Spekt_w, &SpectrogramWidget::appendSpectrum);
     } else {
-        qWarning() << "Nie znaleziono widgetu FFT (fft) w MainWindow UI";
+        qWarning() << "Nie znaleziono widgetu Spektrogramu w MainWindow UI";
+    }
+
+    // Podłączenie widgetu FFT (widmo FFT -> słupki FFT)
+    if (ui->FFT_w) {
+        QObject::connect(processor, &DataProcessor::FFTDataReady,
+                         ui->FFT_w, &FFTWidget::updateSpectrum);
+    } else {
+        qWarning() << "Nie znaleziono widgetu FFT w MainWindow UI";
     }
 
     // Obsługa błędów
@@ -83,16 +96,19 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_Opcje_an_b_clicked() {
     ui->Widoki_sw->setCurrentWidget(ui->Opcje_w);
+    emit(needToCalc(Needed::Idle));
     back_option = FromWhere::Analytics;
 }
 
 void MainWindow::on_Opcje_muz_b_clicked() {
     ui->Widoki_sw->setCurrentWidget(ui->Opcje_w);
+    emit(needToCalc(Needed::Idle));
     back_option = FromWhere::Musical;
 }
 
 void MainWindow::on_Opcje_b_clicked() {
     ui->Widoki_sw->setCurrentWidget(ui->Opcje_w);
+    emit(needToCalc(Needed::Idle));
     back_option = FromWhere::MainMenu;
 }
 
@@ -101,12 +117,15 @@ void MainWindow::on_Powrot_opcje_b_clicked() {
     {
     case FromWhere::MainMenu:
         ui->Widoki_sw->setCurrentWidget(ui->MainMenu_w);
+        emit(needToCalc(Needed::Idle));
         break;
     case FromWhere::Analytics:
         ui->Widoki_sw->setCurrentWidget(ui->WidokAnalityczny_w);
+        emit(needToCalc(Needed::Analytics));
         break;
     case FromWhere::Musical:
         ui->Widoki_sw->setCurrentWidget(ui->WidokMuzyczny_w);
+        emit(needToCalc(Needed::Musical));
         break;
     default:
         break;
@@ -118,36 +137,52 @@ void MainWindow::on_Powrot_opcje_b_clicked() {
 // FFT min freq
 
 void MainWindow::on_FFT_minfreq_s_valueChanged(int value) {
-    ui->FFT_minfreq_sb->setValue(value);
-    if (ui->Spekt_w) ui->Spekt_w->updateMinFreq(value);
+    if(ui->FFT_maxfreq_s->value() > value) {
+        ui->FFT_minfreq_sb->setValue(value);
+        ui->FFT_w->updateMinFreq(value);
+    } else {
+        ui->FFT_minfreq_s->setValue(ui->FFT_minfreq_sb->value());
+    }
 }
 
 void MainWindow::on_FFT_minfreq_sb_valueChanged(int arg1) {
-    ui->FFT_minfreq_s->setValue(arg1);
-    if (ui->Spekt_w) ui->Spekt_w->updateMinFreq(arg1);
+    if(ui->FFT_maxfreq_s->value() > arg1) {
+        ui->FFT_minfreq_s->setValue(arg1);
+        ui->FFT_w->updateMinFreq(arg1);
+    } else {
+        ui->FFT_minfreq_sb->setValue(ui->FFT_minfreq_s->value());
+    }
 }
 
 // FFT max freq
 
 void MainWindow::on_FFT_maxfreq_s_valueChanged(int value) {
-    ui->FFT_maxfreq_sb->setValue(value);
-    if (ui->Spekt_w) ui->Spekt_w->updateMaxFreq(value);
+    if(ui->FFT_minfreq_s->value() < value) {
+        ui->FFT_maxfreq_sb->setValue(value);
+        ui->FFT_w->updateMaxFreq(value);
+    } else {
+        ui->FFT_maxfreq_s->setValue(ui->FFT_maxfreq_sb->value());
+    }
 }
 
 void MainWindow::on_FFT_maxfreq_sb_valueChanged(int arg1) {
-    ui->FFT_maxfreq_s->setValue(arg1);
-    if (ui->Spekt_w) ui->Spekt_w->updateMaxFreq(arg1);
+    if(ui->FFT_minfreq_s->value() < arg1) {
+        ui->FFT_maxfreq_s->setValue(arg1);
+        ui->FFT_w->updateMaxFreq(arg1);
+    } else {
+        ui->FFT_maxfreq_sb->setValue(ui->FFT_maxfreq_s->value());
+    }
 }
 
 // Oscyloskop Time
 
-void MainWindow::on_Osc_time_s_valueChanged(int value) {
-    ui->Osc_time_dsb->setValue(static_cast<double>(value)/10.0);
+void MainWindow::on_Osc_Spekt_time_s_valueChanged(int value) {
+    ui->Osc_Spekt_time_dsb->setValue(static_cast<double>(value)/10.0);
     if (ui->Osc_w) ui->Osc_w->updateTime(static_cast<double>(value)/10.0);
 }
 
-void MainWindow::on_Osc_time_dsb_valueChanged(double arg1) {
-    ui->Osc_time_s->setValue(static_cast<int>(arg1*10));
+void MainWindow::on_Osc_Spekt_time_dsb_valueChanged(double arg1) {
+    ui->Osc_Spekt_time_s->setValue(static_cast<int>(arg1*10));
     if (ui->Osc_w) ui->Osc_w->updateTime(arg1);
 }
 

@@ -8,7 +8,7 @@
 
 FFTWidget::FFTWidget(QWidget *parent)
     : QWidget(parent)
-    , m_magnitude(samplesPacketSize / 2, 0.0)
+    , m_magnitude(fftWindowSize / 2 + 1, 0.0)
     , m_refreshTimer(new QTimer(this))
 {
     setMinimumSize(200, 100);
@@ -23,7 +23,7 @@ void FFTWidget::updateSpectrum(const std::vector<double>& magnitudes)
 {
     // Kopiujemy gotowe amplitudy do naszego bufora na wypadek gdyby
     // repaint() wywołał się po powrocie ze slota
-    m_magnitude = magnitudes; // nazwa członka pozostawiona, ale wartości są liniowe amplitudy
+    m_magnitude = magnitudes; // nazwa członka pozostawiona, ale wartościami są liniowe amplitudy
     m_hasData = true;
 }
 
@@ -51,6 +51,7 @@ void FFTWidget::paintEvent(QPaintEvent * /*event*/)
     bgGrad.setColorAt(1.0, QColor(5, 5, 25));
     painter.fillRect(rect(), bgGrad);
 
+    // Jeśli nie ma danych nie rysuj nic
     if (!m_hasData) return;
 
     const int halfN = m_magnitude.size();

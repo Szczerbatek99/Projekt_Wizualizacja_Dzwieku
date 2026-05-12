@@ -51,10 +51,13 @@ private slots:
     void on_FFT_maxfreq_sb_valueChanged(int arg1);
 
     // Oscyloskop Time
-    void on_Osc_time_s_valueChanged(int value);
-    void on_Osc_time_dsb_valueChanged(double arg1);
+    void on_Osc_Spekt_time_s_valueChanged(int value);
+    void on_Osc_Spekt_time_dsb_valueChanged(double arg1);
 
     // Oscyloskop Gain
     void on_Osc_gain_s_valueChanged(int value);
     void on_Osc_gain_dsb_valueChanged(double arg1);
+
+signals:
+    void needToCalc(const Needed& needed);
 };

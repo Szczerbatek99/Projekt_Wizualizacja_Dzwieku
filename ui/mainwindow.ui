@@ -241,15 +241,15 @@ QGroupBox::title {
     <item>
      <widget class="QStackedWidget" name="Widoki_sw">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="Opcje_w">
        <widget class="QWidget" name="layoutWidget_2">
         <property name="geometry">
          <rect>
-          <x>320</x>
-          <y>60</y>
-          <width>243</width>
+          <x>470</x>
+          <y>110</y>
+          <width>271</width>
           <height>341</height>
          </rect>
         </property>
@@ -386,8 +386,8 @@ QGroupBox::title {
        <widget class="QPushButton" name="Powrot_opcje_b">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>520</y>
+          <x>50</x>
+          <y>600</y>
           <width>151</width>
           <height>31</height>
          </rect>
@@ -399,9 +399,9 @@ QGroupBox::title {
        <widget class="QWidget" name="layoutWidget">
         <property name="geometry">
          <rect>
-          <x>40</x>
-          <y>60</y>
-          <width>251</width>
+          <x>130</x>
+          <y>110</y>
+          <width>301</width>
           <height>341</height>
          </rect>
         </property>
@@ -425,10 +425,13 @@ QGroupBox::title {
             </font>
            </property>
            <property name="text">
-            <string>Opcje Oscylogramu</string>
+            <string>Opcje Oscylogramu i Spektrogramu</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
            </property>
           </widget>
          </item>
@@ -443,7 +446,7 @@ QGroupBox::title {
               </sizepolicy>
              </property>
              <property name="text">
-              <string>Czas okna oscylogramu (s)</string>
+              <string>Czas okna (s)</string>
              </property>
              <property name="alignment">
               <set>Qt::AlignCenter</set>
@@ -451,7 +454,7 @@ QGroupBox::title {
             </widget>
            </item>
            <item>
-            <widget class="QSlider" name="Osc_time_s">
+            <widget class="QSlider" name="Osc_Spekt_time_s">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -485,7 +488,7 @@ QGroupBox::title {
             </widget>
            </item>
            <item>
-            <widget class="QDoubleSpinBox" name="Osc_time_dsb">
+            <widget class="QDoubleSpinBox" name="Osc_Spekt_time_dsb">
              <property name="minimum">
               <double>0.100000000000000</double>
              </property>
@@ -535,7 +538,7 @@ QGroupBox::title {
               <number>10</number>
              </property>
              <property name="maximum">
-              <number>100</number>
+              <number>200</number>
              </property>
              <property name="value">
               <number>10</number>
@@ -551,7 +554,7 @@ QGroupBox::title {
               <double>1.000000000000000</double>
              </property>
              <property name="maximum">
-              <double>10.000000000000000</double>
+              <double>20.000000000000000</double>
              </property>
              <property name="singleStep">
               <double>0.100000000000000</double>
@@ -651,19 +654,19 @@ QGroupBox::title {
         <item>
          <widget class="QStackedWidget" name="Widoki_an_sw">
           <property name="currentIndex">
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="Osc_Spekt_w">
            <layout class="QVBoxLayout" name="verticalLayout_2" stretch="0,0">
             <item>
-             <widget class="OscillogramWidget" name="Osc_w" native="true"/>
+             <widget class="SpectrogramWidget" name="Spekt_w" native="true"/>
             </item>
             <item>
-             <widget class="FFTWidget" name="Spekt_w" native="true"/>
+             <widget class="OscillogramWidget" name="Osc_w" native="true"/>
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="FFT_w"/>
+          <widget class="FFTWidget" name="FFT_w"/>
          </widget>
         </item>
        </layout>
@@ -970,6 +973,12 @@ QGroupBox::title {
    <class>OscillogramWidget</class>
    <extends>QWidget</extends>
    <header>OscillogramWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>SpectrogramWidget</class>
+   <extends>QWidget</extends>
+   <header>SpectrogramWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

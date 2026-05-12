@@ -31,6 +31,7 @@ set(SOURCES
     src/OscillogramWidget.cpp
     src/FFTWidget.cpp
     src/DataProcessor.cpp
+    src/SpectrogramWidget.cpp
     src/mainwindow.cpp
     ui/mainwindow.ui  # Plik UI jest tutaj
 )
@@ -40,6 +41,7 @@ set(HEADERS
     inc/OscillogramWidget.h
     inc/FFTWidget.h
     inc/DataProcessor.h
+    inc/SpectrogramWidget.h
     inc/config.h
     inc/mainwindow.h
     inc/style.h

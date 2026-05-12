@@ -5,6 +5,12 @@
 #include <complex>
 #include <deque>
 
+enum class Needed {
+    Idle,
+    Analytics, 
+    Musical,
+};
+
 /**
  * @brief Klasa odpowiedzialna za przetwarzanie i przygotowywanie danych 
  * dźwiękowych z mikrokontrolera do celów wizualizacji graficznych.
@@ -32,6 +38,10 @@ public slots:
      */
     void processRawData(const std::vector<int32_t>& data);
 
+    /**
+     * @brief Określa co trzeba policzyć.
+     */
+    void whatsNeeded(const Needed& needed);
 signals:
     /**
      * @brief Znormalizowany przebieg od -1.0 do 1.0 (do oscyloskopu).
@@ -56,6 +66,11 @@ private:
      * @brief Bufor kołowy przechowujący najnowsze próbki do analizy (overlap).
      */
     std::deque<double> m_fftBuffer;
+
+    /**
+     * @brief Określa jakie obliczenia wykonać w zależności od potrzeby danych do wyświetlenia.
+     */
+    Needed needed = Needed::Idle;
 
     /**
      * @brief Stosuje okno Hanninga (redukcja wyciekania widma).

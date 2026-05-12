@@ -5,11 +5,17 @@
 #include <fftw3.h>
 #include <limits>
 
+
 DataProcessor::DataProcessor(QObject *parent):
     QObject(parent)
 {
     // Wypełniamy bufor zerami na start, by od razu miał poprawny rozmiar do analizy
     m_fftBuffer.resize(fftWindowSize, 0.0);
+}
+
+void DataProcessor::whatsNeeded(const Needed& needed)
+{
+    this->needed = needed;
 }
 
 void DataProcessor::applyHannWindow(std::vector<double>& data)
@@ -39,7 +45,7 @@ std::vector<std::complex<double>> DataProcessor::calculateFFT(const std::vector<
 
 void DataProcessor::processRawData(const std::vector<int32_t>& data)
 {
-    if (static_cast<int>(data.size()) < samplesPacketSize) return;
+    if (data.size() < samplesPacketSize) return;
     std::vector<double> normalizedData(samplesPacketSize);
 
     constexpr double scale = 1.0 / 2147483648.0;
@@ -61,32 +67,34 @@ void DataProcessor::processRawData(const std::vector<int32_t>& data)
     // Emitowanie małej, znormalizowanej paczki do oscylogramu (szybkie odświeżanie UI)
     emit waveformDataReady(normalizedData);
 
-    // Kopiowanie pełnego, 2048-elementowego bufora do wektora analitycznego
-    std::vector<double> windowedData(m_fftBuffer.begin(), m_fftBuffer.end());
-    applyHannWindow(windowedData);
+    if(needed == Needed::Analytics) {
+        // Kopiowanie pełnego, 2048-elementowego bufora do wektora analitycznego
+        std::vector<double> windowedData(m_fftBuffer.begin(), m_fftBuffer.end());
+        applyHannWindow(windowedData);
 
-    std::vector<std::complex<double>> complexSpectrum = calculateFFT(windowedData);
+        std::vector<std::complex<double>> complexSpectrum = calculateFFT(windowedData);
 
-    int N = static_cast<int>(windowedData.size());
-    
-    // Mnożnik dla widma jednostronnego z normalizacją
-    double scale_factor = 2.0 / static_cast<double>(N);
-    // Mnożnik korekcji dla okienkowania
-    const double hann_correction = 1.0 / 0.5;
-    scale_factor *= hann_correction;
+        int N = static_cast<int>(windowedData.size());
+        
+        // Mnożnik dla widma jednostronnego z normalizacją
+        double scale_factor = 2.0 / static_cast<double>(N);
+        // Mnożnik korekcji dla okienkowania
+        const double hann_correction = 1.0 / 0.5;
+        scale_factor *= hann_correction;
 
-    std::vector<double> magnitudes;
-    magnitudes.reserve(complexSpectrum.size());
+        std::vector<double> magnitudes;
+        magnitudes.reserve(complexSpectrum.size());
 
-    for (size_t k = 0; k < complexSpectrum.size(); ++k) {
-        double mag = std::hypot(complexSpectrum[k].real(), complexSpectrum[k].imag()) * scale_factor;
-        // Prążek składowej stałej (DC, k==0) oraz prążek Nyquista (jeśli występuje, k==N/2) 
-        // nie powinny być podwajane w widmie jednostronnym
-        if (k == 0 || (N % 2 == 0 && static_cast<int>(k) == N/2)) {
-            mag *= 0.5; // cofnięcie podwojenia dla tych prążków
+        for (size_t k = 0; k < complexSpectrum.size(); ++k) {
+            double mag = std::hypot(complexSpectrum[k].real(), complexSpectrum[k].imag()) * scale_factor;
+            // Prążek składowej stałej (DC, k==0) oraz prążek Nyquista (jeśli występuje, k==N/2) 
+            // nie powinny być podwajane w widmie jednostronnym
+            if (k == 0 || (N % 2 == 0 && static_cast<int>(k) == N/2)) {
+                mag *= 0.5; // cofnięcie podwojenia dla tych prążków
+            }
+            magnitudes.push_back(mag);
         }
-        magnitudes.push_back(mag);
-    }
 
-    emit FFTDataReady(magnitudes);
+        emit FFTDataReady(magnitudes);
+    }
 }

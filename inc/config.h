@@ -14,12 +14,12 @@
 /**
  * @brief Nazwa portu szeregowego.
  */
-const QString portName = "/dev/ttyACM0";
+inline const QString portName = "/dev/ttyACM0";
 
 /**
  * @brief Zapis słowa startu ramki w hexadecymalnym.
  */
-const char* const SYNC = "AA55AA55";
+inline const char* const SYNC = "AA55AA55";
 
 /**
  * @brief Szybkość transmisji danych w b/s (domyślnie 115200 b/s).
